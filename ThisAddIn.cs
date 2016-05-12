@@ -81,8 +81,8 @@ namespace PPTProgressMaker
 
         private applyStyleDelegate getGradientStyle()
         {
-            var color1 = Globals.Ribbons.Ribbon.getNormalColor();
-            var color2 = Globals.Ribbons.Ribbon.getActiveColor();
+            var color1 = Globals.Ribbons.Ribbon.getActiveColor();
+            var color2 = Globals.Ribbons.Ribbon.getNormalColor();
 
             return (shapes, shapeidx, sldidx, sldpcnt) =>
             {
@@ -93,7 +93,7 @@ namespace PPTProgressMaker
                 {
                     col3 = color2;
                 }
-                else if (sldidx == shapeidx)
+                else if (sldidx < shapeidx)
                 {
                     col1 = col2 = col3 = color2;
                 }
@@ -101,7 +101,11 @@ namespace PPTProgressMaker
                 shapes.Fill.TwoColorGradient(Office.MsoGradientStyle.msoGradientVertical, 1);
                 var gs = shapes.Fill.GradientStops;
                 gs.Insert(col1, 0f, 0);
-                gs.Insert(col2, 0.5f);
+                gs.Insert(col2, (float)(sldpcnt));
+                if(sldpcnt < 0.6)
+                    gs.Insert(col3, 0.6f);
+                else if (sldpcnt < 0.8)
+                    gs.Insert(col3, 0.8f);
                 gs.Insert(col3, 1f);
                 gs.Delete(1);
                 gs.Delete(1);
