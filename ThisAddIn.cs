@@ -36,7 +36,7 @@ namespace PPTProgressMaker
             switch (style)
             {
                 case TocStyle.StyleSolid: styler = getSolidStyle(); break;
-                case TocStyle.StyleGradient: styler = getGradientStyle(); break;
+                case TocStyle.StyleGradient: styler = getGradientStyle(type); break;
                 default:
                     throw new Exception("Unknown color style");
             }
@@ -79,7 +79,7 @@ namespace PPTProgressMaker
                 };
         }
 
-        private applyStyleDelegate getGradientStyle()
+        private applyStyleDelegate getGradientStyle(TocType type)
         {
             var color1 = Globals.Ribbons.Ribbon.getActiveColor();
             var color2 = Globals.Ribbons.Ribbon.getNormalColor();
@@ -98,7 +98,7 @@ namespace PPTProgressMaker
                     col1 = col2 = col3 = color2;
                 }
 
-                shapes.Fill.TwoColorGradient(Office.MsoGradientStyle.msoGradientVertical, 1);
+                shapes.Fill.TwoColorGradient(type == TocType.StyleVertical ? Office.MsoGradientStyle.msoGradientHorizontal : Office.MsoGradientStyle.msoGradientVertical, 1);
                 var gs = shapes.Fill.GradientStops;
                 gs.Insert(col1, 0f, 0);
                 gs.Insert(col2, (float)(sldpcnt));
@@ -128,7 +128,7 @@ namespace PPTProgressMaker
                 secnames[i - 1] = name;
                 int first_slide = sections.FirstSlide(i);
                 int last_slide = (i + 1 <= sections.Count) ? sections.FirstSlide(i + 1) : num_slides;
-                for (int j = first_slide; j <= last_slide; ++j)
+                for (int j = first_slide; j <= last_slide && j >= 1; ++j)
                     pcnt[j - 1] = (j - first_slide + 1.0) / (last_slide - first_slide + 1.0);
             }
         }
