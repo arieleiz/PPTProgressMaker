@@ -142,10 +142,10 @@ namespace PPTProgressMaker
 
                 for (int j = first_slide; j <= last_slide && j >= 1; ++j)
                 {
-                    if (p.Slides[j].SlideShowTransition.Hidden != Office.MsoTriState.msoTrue)
-                        pcnt[j - 1] = (j - hidden_pos - first_slide + 1.0) / count;
-                    else
+                    if (p.Slides[j].SlideShowTransition.Hidden == Office.MsoTriState.msoTrue)
                         hidden_pos += 1;
+
+                    pcnt[j - 1] = (j - hidden_pos - first_slide + 1.0) / count;
                 }
             }
         }
