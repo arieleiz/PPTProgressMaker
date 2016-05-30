@@ -27,19 +27,9 @@ namespace PPTProgressMaker
         {
         }
 
-        public enum TocType { StyleHorizontal, StyleVertical };
-        public enum TocStyle { StyleSolid, StyleGradient };
-
-        public void addToC(TocType type, TocStyle style, bool rtl)
+        public void addToC(ToCStyle tocstyle)
         {
-            applyStyleDelegate styler;
-            switch (style)
-            {
-                case TocStyle.StyleSolid: styler = getSolidStyle(); break;
-                case TocStyle.StyleGradient: styler = getGradientStyle(type); break;
-                default:
-                    throw new Exception("Unknown color style");
-            }
+            applyStyleDelegate styler = getStyler(tocstyle);
 
             string[] secnames;
             double[] pcnt;
@@ -47,17 +37,31 @@ namespace PPTProgressMaker
             deleteOldToC();
             buildToCData(out secnames, out pcnt);
 
-            switch(type)
+            switch (tocstyle.Type)
             {
-                case TocType.StyleHorizontal:
-                    addHorizontalToC(secnames, pcnt, rtl, styler);
+                case ToCStyle.Types.Horizontal:
+                    addHorizontalToC(secnames, pcnt, styler, tocstyle);
                     break;
-                case TocType.StyleVertical:
-                    addVerticalToC(secnames, pcnt, rtl, styler);
+                case ToCStyle.Types.Vertical:
+                    addVerticalToC(secnames, pcnt, styler, tocstyle);
                     break;
 
             }
 
+        }
+
+        private applyStyleDelegate getStyler(ToCStyle tocstyle)
+        {
+            applyStyleDelegate styler;
+            switch (tocstyle.Style)
+            {
+                case ToCStyle.Styles.Solid: styler = getSolidStyle(); break;
+                case ToCStyle.Styles.Gradient: styler = getGradientStyle(tocstyle); break;
+                default:
+                    throw new Exception("Unknown color style");
+            }
+
+            return styler;
         }
 
         delegate void applyStyleDelegate(Microsoft.Office.Core.ShapeRange shapes, int shapeidx, int sldidx, double sldpcnt);
@@ -79,7 +83,7 @@ namespace PPTProgressMaker
                 };
         }
 
-        private applyStyleDelegate getGradientStyle(TocType type)
+        private applyStyleDelegate getGradientStyle(ToCStyle style)
         {
             var color1 = Globals.Ribbons.Ribbon.getActiveColor();
             var color2 = Globals.Ribbons.Ribbon.getNormalColor();
@@ -98,7 +102,7 @@ namespace PPTProgressMaker
                     col1 = col2 = col3 = color2;
                 }
 
-                shapes.Fill.TwoColorGradient(type == TocType.StyleVertical ? Office.MsoGradientStyle.msoGradientHorizontal : Office.MsoGradientStyle.msoGradientVertical, 1);
+                shapes.Fill.TwoColorGradient(style.Type == ToCStyle.Types.Vertical ? Office.MsoGradientStyle.msoGradientHorizontal : Office.MsoGradientStyle.msoGradientVertical, 1);
                 var gs = shapes.Fill.GradientStops;
                 gs.Insert(col1, 0f, 0);
                 gs.Insert(col2, (float)(sldpcnt));
@@ -128,8 +132,21 @@ namespace PPTProgressMaker
                 secnames[i - 1] = name;
                 int first_slide = sections.FirstSlide(i);
                 int last_slide = (i + 1 <= sections.Count) ? sections.FirstSlide(i + 1) : num_slides;
+                int hidden = 0;
                 for (int j = first_slide; j <= last_slide && j >= 1; ++j)
-                    pcnt[j - 1] = (j - first_slide + 1.0) / (last_slide - first_slide + 1.0);
+                    if (p.Slides[j].SlideShowTransition.Hidden == Office.MsoTriState.msoTrue)
+                        hidden += 1;
+
+                double count = last_slide - first_slide + 1.0 - hidden;
+                int hidden_pos = 0;
+
+                for (int j = first_slide; j <= last_slide && j >= 1; ++j)
+                {
+                    if (p.Slides[j].SlideShowTransition.Hidden != Office.MsoTriState.msoTrue)
+                        pcnt[j - 1] = (j - hidden_pos - first_slide + 1.0) / count;
+                    else
+                        hidden_pos += 1;
+                }
             }
         }
 
@@ -148,7 +165,7 @@ namespace PPTProgressMaker
             }
         }
 
-        private void addHorizontalToC(string[] secnames, double[] pcnt, bool rtl, applyStyleDelegate styler)
+        private void addHorizontalToC(string[] secnames, double[] pcnt, applyStyleDelegate styler, ToCStyle style)
         {
             var p = Application.ActivePresentation;
             var slides = p.Slides;
@@ -161,19 +178,19 @@ namespace PPTProgressMaker
             float left = 0;
             float top = p.PageSetup.SlideHeight - height;
             
-            for (int i = 0; i < num_slides; ++i)
+            for (int i = getFirstSlide(style); i < num_slides; ++i)
             {
                 var slide = slides[i + 1];
                
                 var shape = slide.Shapes.AddSmartArt(layout, left, top, width, height);
                 shape.Name = SHAPE_TAG;
-                if (rtl)
+                if (style.RTL)
                     shape.SmartArt.Reverse = Microsoft.Office.Core.MsoTriState.msoTrue;
 
                 formatToCShape(shape, i, slide.SectionNumber, secnames, pcnt, styler);
             }
         }
-        private void addVerticalToC(string[] secnames, double[] pcnt, bool rtl, applyStyleDelegate styler)
+        private void addVerticalToC(string[] secnames, double[] pcnt, applyStyleDelegate styler, ToCStyle style)
         {
             var p = Application.ActivePresentation;
             var slides = p.Slides;
@@ -183,20 +200,25 @@ namespace PPTProgressMaker
             var layout = Application.SmartArtLayouts[id];
             float height = p.PageSetup.SlideHeight;
             float width = p.PageSetup.SlideWidth / 6;
-            float left = rtl ? (p.PageSetup.SlideWidth - width) : 0;
+            float left = style.RTL ? (p.PageSetup.SlideWidth - width) : 0;
             float top = 0;
 
-            for (int i = 0; i < num_slides; ++i)
+            for (int i = getFirstSlide(style); i < num_slides; ++i)
             {
                 var slide = slides[i + 1];
 
                 var shape = slide.Shapes.AddSmartArt(layout, left, top, width, height);
                 shape.Name = SHAPE_TAG;
-                if(rtl)
+                if(style.RTL)
                     shape.SmartArt.Reverse = Microsoft.Office.Core.MsoTriState.msoTrue;
 
                 formatToCShape(shape, i, slide.SectionNumber, secnames, pcnt, styler);
             }
+        }
+
+        private int getFirstSlide(ToCStyle style)
+        {
+            return style.FirstSlide ? 0 : 1;
         }
 
         private void formatToCShape(PowerPoint.Shape shape, int sldindex, int secindex, string[] secnames, double[] pcnt, applyStyleDelegate styler)

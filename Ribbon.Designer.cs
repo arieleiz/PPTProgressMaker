@@ -44,6 +44,7 @@
             this.box1 = this.Factory.CreateRibbonBox();
             this.glActive = this.Factory.CreateRibbonGallery();
             this.glNormal = this.Factory.CreateRibbonGallery();
+            this.cbFirstSlide = this.Factory.CreateRibbonCheckBox();
             this.tab1.SuspendLayout();
             this.group1.SuspendLayout();
             this.box2.SuspendLayout();
@@ -89,6 +90,7 @@
             this.box2.BoxStyle = Microsoft.Office.Tools.Ribbon.RibbonBoxStyle.Vertical;
             this.box2.Items.Add(this.cbGradient);
             this.box2.Items.Add(this.cbRTL);
+            this.box2.Items.Add(this.cbFirstSlide);
             this.box2.Name = "box2";
             // 
             // cbGradient
@@ -123,6 +125,11 @@
             this.glNormal.ShowImage = true;
             this.glNormal.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.glNormal_Click);
             // 
+            // cbFirstSlide
+            // 
+            this.cbFirstSlide.Label = "On first slide";
+            this.cbFirstSlide.Name = "cbFirstSlide";
+            // 
             // Ribbon
             // 
             this.Name = "Ribbon";
@@ -153,6 +160,7 @@
         internal Microsoft.Office.Tools.Ribbon.RibbonCheckBox cbGradient;
         internal Microsoft.Office.Tools.Ribbon.RibbonBox box2;
         internal Microsoft.Office.Tools.Ribbon.RibbonBox box1;
+        internal Microsoft.Office.Tools.Ribbon.RibbonCheckBox cbFirstSlide;
     }
 
     partial class ThisRibbonCollection

@@ -112,21 +112,19 @@ namespace PPTProgressMaker
 
         private void btnHorizTOC_Click(object sender, RibbonControlEventArgs e)
         {
-            try
-            {
-                ThisAddIn.instance.addToC(ThisAddIn.TocType.StyleHorizontal, getStyle(), getRTL());
-            }
-            catch(Exception ex)
-            {
-                MessageBox.Show(ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
+            addToC(ToCStyle.Types.Horizontal);
         }
 
         private void btnVertToc_Click(object sender, RibbonControlEventArgs e)
         {
+            addToC(ToCStyle.Types.Vertical);
+        }
+
+        private void addToC(ToCStyle.Types type)
+        {
             try
             {
-                ThisAddIn.instance.addToC(ThisAddIn.TocType.StyleVertical, getStyle(), getRTL());
+                ThisAddIn.instance.addToC(new ToCStyle() { Type = type, Style = getStyle(), RTL = getRTL(), FirstSlide = isFirstSlide() });
             }
             catch (Exception ex)
             {
@@ -134,17 +132,23 @@ namespace PPTProgressMaker
             }
         }
 
-        private ThisAddIn.TocStyle getStyle()
+
+        private ToCStyle.Styles getStyle()
         {
             if (cbGradient.Checked)
-                return ThisAddIn.TocStyle.StyleGradient;
+                return ToCStyle.Styles.Gradient;
             else
-                return ThisAddIn.TocStyle.StyleSolid;
+                return ToCStyle.Styles.Solid;
         }
 
         private bool getRTL()
         {
             return cbRTL.Checked;
+        }
+
+        private bool isFirstSlide()
+        {
+            return cbFirstSlide.Checked;
         }
 
         private void glActive_Click(object sender, RibbonControlEventArgs e)
