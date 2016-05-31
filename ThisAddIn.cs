@@ -68,8 +68,8 @@ namespace PPTProgressMaker
             
         private applyStyleDelegate getSolidStyle()
         {
-            var color1 = Globals.Ribbons.Ribbon.getNormalColor();
-            var color2 = Globals.Ribbons.Ribbon.getActiveColor();
+            var color1 = Globals.Ribbons.Ribbon.NormalColor;
+            var color2 = Globals.Ribbons.Ribbon.ActiveColor;
 
             return (shapes, shapeidx, sldidx, sldpcnt) =>
                 {
@@ -85,8 +85,8 @@ namespace PPTProgressMaker
 
         private applyStyleDelegate getGradientStyle(ToCStyle style)
         {
-            var color1 = Globals.Ribbons.Ribbon.getActiveColor();
-            var color2 = Globals.Ribbons.Ribbon.getNormalColor();
+            var color1 = Globals.Ribbons.Ribbon.ActiveColor;
+            var color2 = Globals.Ribbons.Ribbon.NormalColor;
 
             return (shapes, shapeidx, sldidx, sldpcnt) =>
             {
