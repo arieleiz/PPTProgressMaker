@@ -144,7 +144,7 @@ namespace PPTProgressMaker
         {
             try
             {
-                ThisAddIn.instance.addToC(new ToCStyle() { Type = type, Style = getStyle(), RTL = getRTL(), FirstSlide = isFirstSlide() });
+                ThisAddIn.instance.addToC(new ToCStyle() { Type = type, Style = Style, RTL = RTL, FirstSlide = FirstSlide, SlideNumbers = SlideNumbers });
             }
             catch (Exception ex)
             {
@@ -153,24 +153,37 @@ namespace PPTProgressMaker
         }
 
 
-        private ToCStyle.Styles getStyle()
+        private ToCStyle.Styles Style
         {
-            if (cbGradient.Checked)
-                return ToCStyle.Styles.Gradient;
-            else
-                return ToCStyle.Styles.Solid;
+            get
+            {
+                if (cbGradient.Checked)
+                    return ToCStyle.Styles.Gradient;
+                else
+                    return ToCStyle.Styles.Solid;
+            }
         }
 
-        private bool getRTL()
+        private bool RTL
         {
-            return cbRTL.Checked;
+            get { return cbRTL.Checked; }
         }
 
-        private bool isFirstSlide()
+        private bool FirstSlide
         {
-            return cbFirstSlide.Checked;
+            get
+            {
+                return cbFirstSlide.Checked;
+            }
         }
 
+        private bool SlideNumbers
+        {
+            get
+            {
+                return cbSlideNumbers.Checked;
+            }
+        }
         private void glActive_Click(object sender, RibbonControlEventArgs e)
         {
             setGalleryColor(glActive.SelectedItemIndex, glActive);

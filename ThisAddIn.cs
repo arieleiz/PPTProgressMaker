@@ -177,7 +177,7 @@ namespace PPTProgressMaker
             float width = p.PageSetup.SlideWidth;
             float left = 0;
             float top = p.PageSetup.SlideHeight - height;
-            
+
             for (int i = getFirstSlide(style); i < num_slides; ++i)
             {
                 var slide = slides[i + 1];
@@ -187,7 +187,7 @@ namespace PPTProgressMaker
                 if (style.RTL)
                     shape.SmartArt.Reverse = Microsoft.Office.Core.MsoTriState.msoTrue;
 
-                formatToCShape(shape, i, slide.SectionNumber, secnames, pcnt, styler);
+                formatToCShape(shape, i, slide.SectionNumber, secnames, pcnt, styler, style);
             }
         }
         private void addVerticalToC(string[] secnames, double[] pcnt, applyStyleDelegate styler, ToCStyle style)
@@ -212,7 +212,7 @@ namespace PPTProgressMaker
                 if(style.RTL)
                     shape.SmartArt.Reverse = Microsoft.Office.Core.MsoTriState.msoTrue;
 
-                formatToCShape(shape, i, slide.SectionNumber, secnames, pcnt, styler);
+                formatToCShape(shape, i, slide.SectionNumber, secnames, pcnt, styler, style);
             }
         }
 
@@ -221,14 +221,29 @@ namespace PPTProgressMaker
             return style.FirstSlide ? 0 : 1;
         }
 
-        private void formatToCShape(PowerPoint.Shape shape, int sldindex, int secindex, string[] secnames, double[] pcnt, applyStyleDelegate styler)
+        private void formatToCShape(PowerPoint.Shape shape, int sldindex, int secindex, string[] secnames, double[] pcnt, applyStyleDelegate styler, ToCStyle style)
         {
-            for(int i = shape.SmartArt.Nodes.Count + 1; i<= secnames.Length; ++ i)
+            bool sldnumbers = style.Type == ToCStyle.Types.Horizontal && style.SlideNumbers;
+            int fsofs = sldnumbers ? 1 : 0;
+
+            for(int i = shape.SmartArt.Nodes.Count + 1; i<= secnames.Length + fsofs; ++ i)
                 shape.SmartArt.Nodes.Add();
+
+            if(sldnumbers)
+            {
+                var node = shape.SmartArt.Nodes[1];
+                node.TextFrame2.TextRange.Text = sldindex.ToString();
+                float height = node.Shapes.Height;
+                while (node.Shapes.Height == height)
+                    node.Smaller();
+                node.Larger();
+                node.TextFrame2.TextRange.ParagraphFormat.Alignment = style.RTL ? Office.MsoParagraphAlignment.msoAlignRight: Office.MsoParagraphAlignment.msoAlignLeft;
+                styler(node.Shapes, 1, 1, 1);
+            }
 
             for (int i = 0; i < secnames.Length; ++i)
             {
-                var node = shape.SmartArt.Nodes[i + 1];
+                var node = shape.SmartArt.Nodes[i + 1 + fsofs];
                 node.TextFrame2.TextRange.Text = secnames[i];
                 styler(node.Shapes, i, secindex, pcnt[sldindex]);
             }
