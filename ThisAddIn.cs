@@ -226,7 +226,11 @@ namespace PPTProgressMaker
             bool sldnumbers = style.Type == ToCStyle.Types.Horizontal && style.SlideNumbers;
             int fsofs = sldnumbers ? 1 : 0;
 
-            for(int i = shape.SmartArt.Nodes.Count + 1; i<= secnames.Length + fsofs; ++ i)
+            int seccount = secnames.Length;
+            if (style.IgnoreLastSection)
+                seccount -= 1;
+
+            for (int i = shape.SmartArt.Nodes.Count + 1; i<= seccount + fsofs; ++ i)
                 shape.SmartArt.Nodes.Add();
 
             if(sldnumbers)
@@ -241,8 +245,9 @@ namespace PPTProgressMaker
                 styler(node.Shapes, 1, 1, 1);
             }
 
-            for (int i = 0; i < secnames.Length; ++i)
+            for (int i = 0; i < seccount; ++i)
             {
+
                 var node = shape.SmartArt.Nodes[i + 1 + fsofs];
                 node.TextFrame2.TextRange.Text = secnames[i];
                 styler(node.Shapes, i, secindex, pcnt[sldindex]);

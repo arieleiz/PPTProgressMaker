@@ -42,10 +42,11 @@
             this.cbGradient = this.Factory.CreateRibbonCheckBox();
             this.cbRTL = this.Factory.CreateRibbonCheckBox();
             this.cbFirstSlide = this.Factory.CreateRibbonCheckBox();
+            this.cbSlideNumbers = this.Factory.CreateRibbonCheckBox();
+            this.cbIgnoreLastSec = this.Factory.CreateRibbonCheckBox();
             this.box1 = this.Factory.CreateRibbonBox();
             this.glActive = this.Factory.CreateRibbonGallery();
             this.glNormal = this.Factory.CreateRibbonGallery();
-            this.cbSlideNumbers = this.Factory.CreateRibbonCheckBox();
             this.tab1.SuspendLayout();
             this.group1.SuspendLayout();
             this.box2.SuspendLayout();
@@ -93,6 +94,7 @@
             this.box2.Items.Add(this.cbRTL);
             this.box2.Items.Add(this.cbFirstSlide);
             this.box2.Items.Add(this.cbSlideNumbers);
+            this.box2.Items.Add(this.cbIgnoreLastSec);
             this.box2.Name = "box2";
             // 
             // cbGradient
@@ -110,6 +112,17 @@
             // 
             this.cbFirstSlide.Label = "On first slide";
             this.cbFirstSlide.Name = "cbFirstSlide";
+            // 
+            // cbSlideNumbers
+            // 
+            this.cbSlideNumbers.Checked = true;
+            this.cbSlideNumbers.Label = "Slide Numbers";
+            this.cbSlideNumbers.Name = "cbSlideNumbers";
+            // 
+            // cbIgnoreLastSec
+            // 
+            this.cbIgnoreLastSec.Label = "Ignore last section";
+            this.cbIgnoreLastSec.Name = "cbIgnoreLastSec";
             // 
             // box1
             // 
@@ -131,12 +144,6 @@
             this.glNormal.Name = "glNormal";
             this.glNormal.ShowImage = true;
             this.glNormal.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.glNormal_Click);
-            // 
-            // cbSlideNumbers
-            // 
-            this.cbSlideNumbers.Checked = true;
-            this.cbSlideNumbers.Label = "Slide Numbers";
-            this.cbSlideNumbers.Name = "cbSlideNumbers";
             // 
             // Ribbon
             // 
@@ -170,6 +177,7 @@
         internal Microsoft.Office.Tools.Ribbon.RibbonBox box1;
         internal Microsoft.Office.Tools.Ribbon.RibbonCheckBox cbFirstSlide;
         internal Microsoft.Office.Tools.Ribbon.RibbonCheckBox cbSlideNumbers;
+        internal Microsoft.Office.Tools.Ribbon.RibbonCheckBox cbIgnoreLastSec;
     }
 
     partial class ThisRibbonCollection

@@ -144,7 +144,7 @@ namespace PPTProgressMaker
         {
             try
             {
-                ThisAddIn.instance.addToC(new ToCStyle() { Type = type, Style = Style, RTL = RTL, FirstSlide = FirstSlide, SlideNumbers = SlideNumbers });
+                ThisAddIn.instance.addToC(new ToCStyle() { Type = type, Style = Style, RTL = RTL, FirstSlide = FirstSlide, SlideNumbers = SlideNumbers, IgnoreLastSection = IgnoreLastSection });
             }
             catch (Exception ex)
             {
@@ -176,6 +176,7 @@ namespace PPTProgressMaker
                 return cbFirstSlide.Checked;
             }
         }
+        public bool IgnoreLastSection { get { return cbIgnoreLastSec.Checked; } }
 
         private bool SlideNumbers
         {
