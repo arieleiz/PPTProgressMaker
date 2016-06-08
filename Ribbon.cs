@@ -6,14 +6,13 @@ using Microsoft.Office.Tools.Ribbon;
 using System.Windows.Forms;
 using System.Diagnostics;
 using System.Drawing;
+using System.Runtime.Serialization.Formatters.Binary;
+using System.IO;
 
 namespace PPTProgressMaker
 {
     public partial class Ribbon
     {
-        private static readonly string AE_ACTIVE_COL_TAG = "ae_active_color";
-        private static readonly string AE_NORMAL_COL_TAG = "ae_normal_color";
-
         private void Ribbon_Load(object sender, RibbonUIEventArgs e)
         {
             setEnabled(false);
@@ -25,26 +24,16 @@ namespace PPTProgressMaker
 
         private void Application_PresentationBeforeSave(Microsoft.Office.Interop.PowerPoint.Presentation Pres, ref bool Cancel)
         {
-            setPresTag(Pres, AE_ACTIVE_COL_TAG, ActiveColor.ToString());
-            setPresTag(Pres, AE_NORMAL_COL_TAG, NormalColor.ToString());
         }
 
         private void Application_PresentationOpen(Microsoft.Office.Interop.PowerPoint.Presentation Pres)
         {
             setEnabled(true);
             Application_ColorSchemeChanged(null);
-            loadPresColor(Pres, AE_ACTIVE_COL_TAG, glActive);
-            loadPresColor(Pres, AE_NORMAL_COL_TAG, glNormal);
+            loadStyle();
         }
 
-        private void loadPresColor(Microsoft.Office.Interop.PowerPoint.Presentation Pres, string tag, RibbonGallery gl)
-        {
-            int value;
-            string str = getPresTag(Pres, tag);
-            if (!String.IsNullOrEmpty(str) && int.TryParse(str, out value))
-                setColor(gl, value);
-
-        }
+        
         private void Application_PresentationClose(Microsoft.Office.Interop.PowerPoint.Presentation Pres)
         {
             setEnabled(false);
@@ -144,7 +133,9 @@ namespace PPTProgressMaker
         {
             try
             {
-                ThisAddIn.instance.addToC(new ToCStyle() { Type = type, Style = Style, RTL = RTL, FirstSlide = FirstSlide, SlideNumbers = SlideNumbers, IgnoreLastSection = IgnoreLastSection });
+                var style = new ToCStyle() { Type = type, Style = Style, RTL = RTL, FirstSlide = FirstSlide, SlideNumbers = SlideNumbers, IgnoreLastSection = IgnoreLastSection, NormalColor =  NormalColor, ActiveColor = ActiveColor};
+                storeStyle(style);
+                ThisAddIn.instance.addToC(style);
             }
             catch (Exception ex)
             {
@@ -215,6 +206,29 @@ namespace PPTProgressMaker
             setGalleryColor(pos, gl);
         }
 
+        public int NormalColor
+        {
+            get {
+                return (int)glNormal.Tag;
+            }
+            set
+            {
+                setColor(glNormal, value);
+            }
+        }
+
+        public int ActiveColor
+        {
+            get {
+                return (int)glActive.Tag;
+            }
+            set
+            {
+                setColor(glActive, value);
+            }
+        }
+
+
         private void setPresTag(Microsoft.Office.Interop.PowerPoint.Presentation Pres, string tag, string value)
         {
             try
@@ -238,26 +252,41 @@ namespace PPTProgressMaker
                 return null;
             }
         }
-
-        public int NormalColor
+        private void loadStyle()
         {
-            get {
-                return (int)glNormal.Tag;
-            }
-            set
+            try
             {
-                setColor(glNormal, value);
+                var state = Convert.FromBase64String(getPresTag(Globals.ThisAddIn.Application.ActivePresentation, "ae_state"));
+                using (var stream = new MemoryStream(state))
+                {
+                    var bf = new BinaryFormatter();
+                    var style = (ToCStyle)bf.Deserialize(stream);
+                    applyUIStyle(style);
+                }
             }
+            catch { }
         }
 
-        public int ActiveColor
+        private void applyUIStyle(ToCStyle style)
         {
-            get {
-                return (int)glActive.Tag;
-            }
-            set
+            cbGradient.Checked = style.Style == ToCStyle.Styles.Gradient;
+            cbRTL.Checked = style.RTL;
+            cbFirstSlide.Checked = style.FirstSlide;
+            cbSlideNumbers.Checked = style.SlideNumbers;
+            cbIgnoreLastSec.Checked = style.IgnoreLastSection;
+            ActiveColor = style.ActiveColor;
+            NormalColor = style.NormalColor;
+        }
+
+        private void storeStyle(ToCStyle style)
+        {
+            BinaryFormatter bf = new BinaryFormatter();
+            using (MemoryStream stream = new MemoryStream())
             {
-                setColor(glActive, value);
+                bf.Serialize(stream, style);
+                byte[] data = stream.ToArray();
+                string state = Convert.ToBase64String(data);
+                setPresTag(Globals.ThisAddIn.Application.ActivePresentation, "ae_state", state);
             }
         }
 

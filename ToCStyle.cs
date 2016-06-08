@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 namespace PPTProgressMaker
 {
+    [Serializable]
     public class ToCStyle
     {
         public ToCStyle()
@@ -25,5 +26,7 @@ namespace PPTProgressMaker
         public bool FirstSlide { get; set; }
         public bool SlideNumbers { get; set; }
         public bool IgnoreLastSection { get; set;  }
+        public int ActiveColor { get; set;  }
+        public int NormalColor { get; set; }
     }
 }

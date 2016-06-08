@@ -55,7 +55,7 @@ namespace PPTProgressMaker
             applyStyleDelegate styler;
             switch (tocstyle.Style)
             {
-                case ToCStyle.Styles.Solid: styler = getSolidStyle(); break;
+                case ToCStyle.Styles.Solid: styler = getSolidStyle(tocstyle); break;
                 case ToCStyle.Styles.Gradient: styler = getGradientStyle(tocstyle); break;
                 default:
                     throw new Exception("Unknown color style");
@@ -66,14 +66,14 @@ namespace PPTProgressMaker
 
         delegate void applyStyleDelegate(Microsoft.Office.Core.ShapeRange shapes, int shapeidx, int sldidx, double sldpcnt);
             
-        private applyStyleDelegate getSolidStyle()
+        private applyStyleDelegate getSolidStyle(ToCStyle style)
         {
-            var color1 = Globals.Ribbons.Ribbon.NormalColor;
-            var color2 = Globals.Ribbons.Ribbon.ActiveColor;
+            var normal = style.NormalColor;
+            var active = style.ActiveColor;
 
             return (shapes, shapeidx, sldidx, sldpcnt) =>
                 {
-                    var col = (sldidx == shapeidx) ? color2 : color1;
+                    var col = (sldidx == shapeidx) ? active : normal;
                     shapes.Fill.TwoColorGradient(Office.MsoGradientStyle.msoGradientVertical, 1);
                     var gs = shapes.Fill.GradientStops;
                     gs.Insert(col, 0f, 0);
@@ -85,21 +85,21 @@ namespace PPTProgressMaker
 
         private applyStyleDelegate getGradientStyle(ToCStyle style)
         {
-            var color1 = Globals.Ribbons.Ribbon.ActiveColor;
-            var color2 = Globals.Ribbons.Ribbon.NormalColor;
+            var active = style.ActiveColor;
+            var normal = style.NormalColor;
 
             return (shapes, shapeidx, sldidx, sldpcnt) =>
             {
-                var col1 = color1;
-                var col2 = color1;
-                var col3 = color1;
+                var col1 = active;
+                var col2 = active;
+                var col3 = active;
                 if (sldidx == shapeidx)
                 {
-                    col3 = color2;
+                    col3 = normal;
                 }
                 else if (sldidx < shapeidx)
                 {
-                    col1 = col2 = col3 = color2;
+                    col1 = col2 = col3 = normal;
                 }
 
                 shapes.Fill.TwoColorGradient(style.Type == ToCStyle.Types.Vertical ? Office.MsoGradientStyle.msoGradientHorizontal : Office.MsoGradientStyle.msoGradientVertical, 1);
